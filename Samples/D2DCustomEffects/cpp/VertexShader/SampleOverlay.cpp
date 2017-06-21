@@ -11,6 +11,7 @@
 
 #include "pch.h"
 #include "SampleOverlay.h"
+#include <tchar.h>
 
 using namespace CustomVertexShader;
 
@@ -40,6 +41,9 @@ void SampleOverlay::CreateDeviceDependentResources()
     DX::ThrowIfFailed(
         m_deviceResources->GetD2DDeviceContext()->CreateSolidColorBrush(ColorF(ColorF::White), &m_whiteBrush)
         );
+	DX::ThrowIfFailed(
+		m_deviceResources->GetD2DDeviceContext()->CreateSolidColorBrush(ColorF(ColorF::White), &m_solidBrush)
+		);
 
     ComPtr<IWICBitmapDecoder> wicBitmapDecoder;
     DX::ThrowIfFailed(
@@ -162,6 +166,15 @@ void SampleOverlay::Render()
 {
     if (m_drawOverlay)
     {
+		HRESULT hrTemp = m_deviceResources->GetSwapChain()->SetFullscreenState(true, NULL);
+		BOOL state = true;
+		IDXGIOutput* output;
+		m_deviceResources->GetSwapChain()->GetFullscreenState(&state, &output);
+		DXGI_MODE_DESC format;
+		format.Format = DXGI_FORMAT_UNKNOWN;
+		m_deviceResources->GetSwapChain()->ResizeTarget(&format);
+
+
         m_deviceResources->GetD2DDeviceContext()->SaveDrawingState(m_stateBlock.Get());
 
         m_deviceResources->GetD2DDeviceContext()->BeginDraw();
@@ -176,6 +189,21 @@ void SampleOverlay::Render()
             m_textLayout.Get(),
             m_whiteBrush.Get()
             );
+		/////////////////////// jedb stuff below
+		RECT rc = RECT();
+		rc.left = 100;
+		rc.right = 200;
+		rc.top = 100;
+		rc.bottom = 200;
+		m_deviceResources->GetD2DDeviceContext()->FillRectangle(D2D1::RectF(rc.left + 100.0f, rc.top + 100.0f, rc.right - 100.0f, rc.bottom - 100.0f), m_whiteBrush.Get());
+		rc.left = 100;
+		rc.right = 200;
+		rc.top = 300;
+		rc.bottom = 400;
+		m_deviceResources->GetD2DDeviceContext()->DrawRectangle(D2D1::RectF(rc.left + 100.0f, rc.top + 100.0f, rc.right - 100.0f, rc.bottom - 100.0f), m_whiteBrush.Get());
+		//DrawTile(0, 0, 0.90f, 0.50f, 0.30f);
+		DrawMap();
+		/////////////////////// jedb stuff above
 
         // We ignore D2DERR_RECREATE_TARGET here. This error indicates that the device
         // is lost. It will be handled during the next call to Present.
@@ -192,4 +220,28 @@ void SampleOverlay::Render()
 float SampleOverlay::GetTitleHeightInDips()
 {
     return m_logoSize.height + m_padding;
+}
+
+void SampleOverlay::DrawTile(int x, int y, int side, FLOAT r, FLOAT g, FLOAT b)
+{
+	ColorF color = ColorF(r, g, b, 1.0f);
+	m_solidBrush->SetColor(color);
+	m_deviceResources->GetD2DDeviceContext()->FillRectangle(D2D1::RectF(x, y, side,side), m_solidBrush.Get());
+}
+
+void SampleOverlay::DrawMap()
+{
+	ID2D1DeviceContext2* rt = m_deviceResources->GetD2DDeviceContext();
+	D2D1_SIZE_F rtSize = rt->GetSize();
+	FLOAT side = rtSize.width / m_numberOfColumns;
+	srand(time(NULL));
+	for (FLOAT x = 0; x < m_numberOfColumns * side; x += side)
+	{
+		for (FLOAT y = 0; y < m_numberOfRows * side; y += side)
+		{
+			FLOAT r = rand() % 100;
+			r = r / 100;
+			DrawTile(x, y, side, r, 0.0f, 0.0f);
+		}
+	}
 }

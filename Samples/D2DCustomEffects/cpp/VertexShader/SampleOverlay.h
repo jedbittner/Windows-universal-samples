@@ -27,11 +27,14 @@ namespace CustomVertexShader
         void ReleaseDeviceDependentResources();
         void Render();
         float GetTitleHeightInDips();
+		void DrawTile(int x, int y, int side, FLOAT r, FLOAT g, FLOAT b);
+		void DrawMap();
 
     private:
         std::shared_ptr<DX::DeviceResources> m_deviceResources;
 
-        Microsoft::WRL::ComPtr<ID2D1SolidColorBrush>    m_whiteBrush;
+		Microsoft::WRL::ComPtr<ID2D1SolidColorBrush>    m_solidBrush;
+		Microsoft::WRL::ComPtr<ID2D1SolidColorBrush>    m_whiteBrush;
         Microsoft::WRL::ComPtr<ID2D1DrawingStateBlock>  m_stateBlock;
 
         Microsoft::WRL::ComPtr<ID2D1Bitmap>             m_logoBitmap;
@@ -44,5 +47,7 @@ namespace CustomVertexShader
         float                                           m_textVerticalOffset;
         D2D1_SIZE_F                                     m_logoSize;
         float                                           m_overlayWidth;
+		int												m_numberOfColumns = 24;
+		int												m_numberOfRows = 12;
     };
 }

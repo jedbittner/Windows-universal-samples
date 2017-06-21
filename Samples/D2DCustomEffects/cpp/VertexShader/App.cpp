@@ -11,6 +11,7 @@
 
 #include "pch.h"
 #include "App.h"
+#include <tchar.h>
 
 #include <ppltasks.h>
 
@@ -201,6 +202,15 @@ void App::OnWindowSizeChanged(CoreWindow^ sender, WindowSizeChangedEventArgs^ ar
 {
     m_deviceResources->SetLogicalSize(Size(sender->Bounds.Width, sender->Bounds.Height));
     m_main->CreateWindowSizeDependentResources();
+
+	ID2D1DeviceContext2* rt = m_deviceResources->GetD2DDeviceContext();
+	D2D1_SIZE_F rtSize = rt->GetSize();
+
+	TCHAR temp[50];
+	_stprintf_s(temp, 50, _T("test %g\n"), rtSize.height);
+	OutputDebugString(temp);
+
+
 }
 
 void App::OnVisibilityChanged(CoreWindow^ sender, VisibilityChangedEventArgs^ args)
